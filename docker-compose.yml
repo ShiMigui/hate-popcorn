@@ -1,0 +1,33 @@
+services:
+  app:
+    build: ./backend
+    container_name: hatepopcorn_app
+    volumes: [./backend:/var/www/html]
+    env_file: ./.docker/app.env
+    depends_on: [db]
+
+  nginx:
+    image: nginx:alpine
+    container_name: hatepopcorn_nginx
+    ports: ["3000:80"]
+    volumes:
+      - ./backend/public:/var/www/html/public
+      - ./.docker/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on: [app]
+
+  db:
+    build: ./.docker/db
+    container_name: hatepopcorn_db
+    env_file: ./.docker/db.env
+    volumes: [db_data:/var/lib/postgresql/data]
+    ports: ["5432:5432"]
+
+  adminer:
+    image: adminer
+    container_name: hatepopcorn_adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  db_data:
