@@ -12,8 +12,7 @@ final class Routes
 {
     public static function dispatch(): Response
     {
-        $isDevEnv = 'dev' === strtolower($_ENV['APP_ENV'] ?? '');
-        $routes   = [
+        $routes = [
             'GET' => [
                 '/' => fn () => Response::json(['message' => 'Hello World']),
             ],
@@ -41,8 +40,14 @@ final class Routes
                 Dispatcher::METHOD_NOT_ALLOWED => Response::error('Method Not Allowed', 405),
                 default                        => Response::error('Internal Error', 500),
             };
+        } catch (\Hatepopcorn\Domain\Exceptions\AppException $e) {
+            return Response::error($e->getMessage(), $e->getHttpCode());
         } catch (\Throwable $e) {
-            return Response::error($isDevEnv ? $e->getMessage() : 'Internal Error');
+            if (isset($_ENV['APP_ENV']) && 'dev' === strtolower($_ENV['APP_ENV'])) {
+                return Response::error($e->getMessage());
+            }
+
+            return Response::error('Internal Error');
         }
     }
 }

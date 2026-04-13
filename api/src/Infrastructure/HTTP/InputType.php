@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Hatepopcorn\Infrastructure\HTTP;
 
+use Hatepopcorn\Domain\Exceptions\InvalidInputException;
+
 enum InputType
 {
     case INT;
@@ -22,7 +24,7 @@ enum InputType
     private function toInt(string $name, mixed $value): int
     {
         if (!is_numeric($value)) {
-            throw new \RuntimeException("Argument '{$name}' must be an integer");
+            throw new InvalidInputException("Argument '{$name}' must be an integer");
         }
 
         return (int) $value;
@@ -31,6 +33,6 @@ enum InputType
     private function toBool(string $name, mixed $value): bool
     {
         return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
-          ?? throw new \RuntimeException("Argument '{$name}' must be a boolean");
+          ?? throw new InvalidInputException("Argument '{$name}' must be a boolean");
     }
 }
