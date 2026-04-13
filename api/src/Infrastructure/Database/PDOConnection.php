@@ -6,13 +6,11 @@ namespace Hatepopcorn\Infrastructure\Database;
 
 use Hatepopcorn\Domain\Helpers\Env;
 
-final class PDOConnection
+class PDOConnection
 {
-    private static ?\PDO $instance = null;
-
     public static function get(): \PDO
     {
-        return self::$instance ??= self::load();
+        return self::load();
     }
 
     private static function load(): \PDO
