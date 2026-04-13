@@ -36,6 +36,7 @@ services:
       DB_PASS: ${DB_PASS}
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
+      APP_ENV: ${APP_ENV}
     depends_on:
       - db
 
