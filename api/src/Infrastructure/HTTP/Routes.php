@@ -9,6 +9,7 @@ use FastRoute\Dispatcher;
 use function FastRoute\simpleDispatcher;
 
 use Hatepopcorn\Application\UseCase;
+use Hatepopcorn\Domain\Helpers\Env;
 
 final class Routes
 {
@@ -17,6 +18,9 @@ final class Routes
         $routes = [
             'POST' => [
                 '/user' => \Hatepopcorn\Application\User\Create::class,
+            ],
+            'GET' => [
+                '/user/{id}' => \Hatepopcorn\Application\User\Find::class,
             ],
         ];
 
@@ -43,7 +47,7 @@ final class Routes
         } catch (\Hatepopcorn\Domain\Exceptions\AppException $e) {
             return Response::error($e->getMessage(), $e->getHttpCode());
         } catch (\Throwable $e) {
-            if ('dev' === strtolower($_ENV['APP_ENV'] ?? '')) {
+            if (Env::isDevEnv()) {
                 return Response::error($e->getMessage());
             }
 

@@ -9,8 +9,6 @@ use Hatepopcorn\Domain\User\UserRepository;
 
 final class PDOUserRepository extends PDORepository implements UserRepository
 {
-    private const SELECT = 'SELECT * FROM users';
-
     public function save(User $user): User
     {
         $params = ['name' => $user->getName(), 'email' => $user->getEmail(), 'pass' => $user->getPassword()];
@@ -34,6 +32,17 @@ final class PDOUserRepository extends PDORepository implements UserRepository
 
     public function findById(int $id): User
     {
-        return new User(id: $id, name: '', email: '', password: '');
+        $r = $this->fetch('SELECT * FROM users WHERE id = :id', ['id' => $id]);
+
+        return new User(
+            name: $r['name'],
+            email: $r['email'],
+            password: $r['password'],
+            id: $r['id'],
+            roleId: $r['role_id'],
+            bio: $r['bio'],
+            createdAt: $r['created_at'],
+            updatedAt: $r['updated_at'],
+        );
     }
 }
