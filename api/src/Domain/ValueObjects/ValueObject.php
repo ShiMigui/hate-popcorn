@@ -6,11 +6,11 @@ namespace Hatepopcorn\Domain\ValueObjects;
 
 abstract class ValueObject
 {
-    protected function __construct(private mixed $value)
+    public function __construct(public readonly mixed $value)
     {
     }
 
-    final public function get(): mixed
+    public function __toString(): string
     {
         return $this->value;
     }

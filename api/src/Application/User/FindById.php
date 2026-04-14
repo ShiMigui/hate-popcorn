@@ -6,24 +6,24 @@ namespace Hatepopcorn\Application\User;
 
 use Hatepopcorn\Application\UseCase;
 use Hatepopcorn\Domain\User\UserRepository;
-use Hatepopcorn\Infrastructure\Database\Container;
+use Hatepopcorn\Infrastructure\Container;
 use Hatepopcorn\Infrastructure\HTTP\InputType;
 use Hatepopcorn\Infrastructure\HTTP\Request;
 use Hatepopcorn\Infrastructure\HTTP\Response;
 
-class Find implements UseCase
+class FindById implements UseCase
 {
     private UserRepository $repo;
 
-    public function __construct(?UserRepository $repo = null)
+    public function __construct()
     {
-        $this->repo = $repo ?? Container::get(UserRepository::class);
+        $this->repo = Container::get(UserRepository::class);
     }
 
     public function execute(Request $req): Response
     {
         $user = $this->repo->findById($req->getArg('id', InputType::INT));
 
-        return Response::json($user->toResponse());
+        return Response::json($user->jsonSerialize());
     }
 }

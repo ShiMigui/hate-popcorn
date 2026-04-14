@@ -37,12 +37,12 @@ final class UserPassword extends ValueObject
 
     public function verify(string $plain): bool
     {
-        return password_verify($plain, $this->get());
+        return password_verify($plain, $this->value);
     }
 
     public function needsRehash(): bool
     {
-        return password_needs_rehash($this->get(), self::ALGO, self::OPTIONS);
+        return password_needs_rehash($this->value, self::ALGO, self::OPTIONS);
     }
 
     /**

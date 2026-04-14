@@ -24,8 +24,22 @@ final class Request
 
     public function getArg(string $name, InputType $type): mixed
     {
-        return $type->cast($name, $this->args[$name]
-          ?? throw new InvalidInputException("Missing required argument: $name"));
+        return $type->cast($name, $this->getFrom($this->args, $name));
+    }
+
+    public function getJson(array $keys, InputType $type = InputType::STRING): mixed
+    {
+        try {
+            $value = $this->json();
+
+            foreach ($keys as $k) {
+                $value = $this->getFrom($value, $k);
+            }
+        } catch (\TypeError) {
+            throw new InvalidInputException('Invalid JSON structure');
+        }
+
+        return $type->cast(end($keys), $value);
     }
 
     private function loadJson(): array
@@ -39,5 +53,10 @@ final class Request
         $data = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
 
         return is_array($data) ? $data : throw new InvalidInputException('JSON body must decode to an array');
+    }
+
+    private function getFrom(array $source, string $name): mixed
+    {
+        return InvalidInputException::notNullOrThrow($source[$name], $name);
     }
 }

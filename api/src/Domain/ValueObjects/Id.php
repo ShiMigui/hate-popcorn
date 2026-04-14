@@ -8,7 +8,7 @@ use Hatepopcorn\Domain\Exceptions\InvalidInputException;
 
 abstract class Id extends ValueObject
 {
-    protected function __construct(int $value)
+    public function __construct(int $value)
     {
         $class = static::className();
 

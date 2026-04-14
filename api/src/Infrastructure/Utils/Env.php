@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Hatepopcorn\Domain\Helpers;
+namespace Hatepopcorn\Infrastructure\Utils;
 
 use Hatepopcorn\Domain\Exceptions\EnvException;
 

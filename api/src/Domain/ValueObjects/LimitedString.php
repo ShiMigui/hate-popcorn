@@ -12,7 +12,7 @@ abstract class LimitedString extends ValueObject
     protected static ?int $min = null;
     private int $len;
 
-    protected function __construct(string $value)
+    public function __construct(string $value)
     {
         $value     = trim($value);
         $this->len = $len = mb_strlen($value);
@@ -24,12 +24,7 @@ abstract class LimitedString extends ValueObject
         $hasMin = null !== $min;
 
         if (($hasMax && $len > $max) || ($hasMin && $len < $min)) {
-            $range = match (true) {
-                $hasMin && $hasMax => "$min-$max",
-                $hasMin            => ">= $min",
-                $hasMax            => "<= $max",
-            };
-            throw new InvalidInputException("$class length must be $range characters, $len given.");
+            throw new InvalidInputException("$class length, $len given.");
         }
 
         parent::__construct($value);

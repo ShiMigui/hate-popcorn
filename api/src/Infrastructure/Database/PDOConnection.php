@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Hatepopcorn\Infrastructure\Database;
 
-use Hatepopcorn\Domain\Helpers\Env;
+use Hatepopcorn\Infrastructure\Utils\Env;
 
-class PDOConnection
+final class PDOConnection
 {
+    private function __construct()
+    {
+    }
+
     public static function get(): \PDO
     {
         return self::load();

@@ -13,22 +13,29 @@ class PDORepository
     public function prepare(string $query, array $params = []): \PDOStatement
     {
         $stmt = $this->conn->prepare($query);
-        $stmt->execute($params);
+
+        if (false === $stmt) {
+            throw new \RuntimeException('Failed to prepare statement');
+        }
+
+        if (!$stmt->execute($params)) {
+            throw new \RuntimeException('Failed to execute statement');
+        }
 
         return $stmt;
     }
 
-    public function fetch(string $query, array $params = []): array
+    public function fetch(string $query, array $params = []): ?array
     {
         $stmt = $this->prepare($query, $params);
 
-        return $stmt->fetch();
+        return false === ($result = $stmt->fetch()) ? null : $result;
     }
 
     public function fetchAll(string $query, array $params = []): array
     {
         $stmt = $this->prepare($query, $params);
 
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
