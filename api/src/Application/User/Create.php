@@ -12,7 +12,7 @@ use Hatepopcorn\Infrastructure\Database\Container;
 use Hatepopcorn\Infrastructure\HTTP\Request;
 use Hatepopcorn\Infrastructure\HTTP\Response;
 
-class Create implements UseCase
+final class Create implements UseCase
 {
     private UserRepository $repo;
 
