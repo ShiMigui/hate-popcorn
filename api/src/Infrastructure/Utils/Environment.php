@@ -23,6 +23,14 @@ final class Environment
     }
 
     /**
+     * Get a environment variable or provided default value.
+     */
+    public static function getOr(string $name, mixed $default): mixed
+    {
+        return $_ENV[$name] ?? $default;
+    }
+
+    /**
      * Check if application is running in development mode.
      *
      * @return bool APP_ENV equals 'dev'
