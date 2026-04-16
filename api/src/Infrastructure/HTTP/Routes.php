@@ -9,38 +9,52 @@ use FastRoute\Dispatcher;
 use function FastRoute\simpleDispatcher;
 
 use Hatepopcorn\Application\UseCase;
-use Hatepopcorn\Infrastructure\Utils\Env;
+use Hatepopcorn\Domain\Exceptions\DomainException;
+use Hatepopcorn\Infrastructure\Container;
+use Hatepopcorn\Infrastructure\Exceptions\InfrastructureException;
+use Hatepopcorn\Infrastructure\Utils\Environment;
 
 final class Routes
 {
     public const routes = [
-        'POST' => [
-            '/register' => \Hatepopcorn\Application\Auth\Register::class,
-        ],
-        'GET' => [
-            '/user/{id}' => \Hatepopcorn\Application\User\FindById::class,
-        ],
+        'GET' => ['/' => \Hatepopcorn\Application\TestUseCase::class],
     ];
 
     public static function dispatch(): Response
     {
         try {
-            return self::fetch(self::makeDispatcher());
-        } catch (\Hatepopcorn\Domain\Exceptions\AppException $e) {
+            $info = self::makeDispatcher(self::routes)->dispatch(
+                $_SERVER['REQUEST_METHOD'],
+                rawurldecode(strtok($_SERVER['REQUEST_URI'] ?? '/', '?'))
+            );
+
+            return match ($info[0]) {
+                Dispatcher::METHOD_NOT_ALLOWED => Response::error('Method Not Allowed', 405),
+                Dispatcher::NOT_FOUND          => Response::notFound(),
+                Dispatcher::FOUND              => self::resolve($info[1], $info[2]),
+                default                        => Response::error('Internal Error'),
+            };
+        } catch (DomainException $e) {
             return Response::error($e->getMessage(), $e->getHttpCode());
-        } catch (\Throwable $e) {
-            if (!Env::isDevEnv()) {
-                return Response::error('Internal Error');
+        } catch (InfrastructureException $e) {
+            $message = $e->getMessage();
+
+            if (Environment::isDevMode()) {
+                if (null === $e->getPrevious()) {
+                    echo $e->getTraceAsString();
+                    exit;
+                }
+                $message .= ": {$e->getPrevious()->getMessage()}";
             }
 
-            throw $e;
+            return Response::error($message);
+        } catch (\Throwable $e) {
+            return Response::error(Environment::isDevMode() ? $e->getMessage() : 'Internal Error');
         }
     }
 
-    private static function makeDispatcher(): Dispatcher
+    private static function makeDispatcher(array $routes): Dispatcher
     {
-        $routes = self::routes;
-
         return simpleDispatcher(
             fn ($r) => array_walk($routes,
                 fn ($rs, $m) => array_walk($rs,
@@ -50,33 +64,12 @@ final class Routes
         );
     }
 
-    private static function fetch(Dispatcher $dispatcher): Response
+    private static function resolve(string $handler, array $vars): Response
     {
-        [$status, $handler, $vars] = $dispatcher->dispatch(
-            httpMethod: $_SERVER['REQUEST_METHOD'],
-            uri: rawurldecode(strtok($_SERVER['REQUEST_URI'] ?? '/', '?'))
-        );
+        $useCase = Container::get($handler);
 
-        return match ($status) {
-            Dispatcher::NOT_FOUND          => Response::notFound(),
-            Dispatcher::FOUND              => self::resolve($handler, $vars),
-            default                        => Response::error('Internal Error'),
-            Dispatcher::METHOD_NOT_ALLOWED => Response::error('Method Not Allowed', 405),
-        };
-    }
-
-    private static function resolve(string $class, array $vars): Response
-    {
-        if (!is_subclass_of($class, UseCase::class)) {
-            return Response::error("Handler [$class] must implement UseCase");
-        }
-
-        $res = (new $class())->execute(new Request($vars));
-
-        if (!$res instanceof Response) {
-            return Response::error('Invalid response type');
-        }
-
-        return $res;
+        return $useCase instanceof UseCase
+          ? $useCase->execute(new Request($vars))
+          : Response::error("[$handler] must implement [UseCase]");
     }
 }

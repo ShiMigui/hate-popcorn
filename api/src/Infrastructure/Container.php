@@ -4,25 +4,20 @@ declare(strict_types=1);
 
 namespace Hatepopcorn\Infrastructure;
 
-use Hatepopcorn\Domain\Auth\JwtService;
-use Hatepopcorn\Domain\Exceptions\InvalidInputException;
-use Hatepopcorn\Domain\Helpers\Env;
-use Hatepopcorn\Domain\User\UserRepository;
-use Hatepopcorn\Infrastructure\Auth\FirebaseJwtService;
-use Hatepopcorn\Infrastructure\Database\PDOConnection;
-use Hatepopcorn\Infrastructure\Database\PDOUserRepository;
+use Hatepopcorn\Application\TestUseCase;
+use Hatepopcorn\Infrastructure\Utils\Assert;
 
 final class Container
 {
     private static array $instances = [];
-    private static array $bindings;
+    private static array $bindings  = [];
 
-    public static function bootstrap(?array $bindings = null): void
+    public static function bootstrap(array $bindings = []): void
     {
-        self::$bindings = $bindings ?? [
-            UserRepository::class => fn () => new PDOUserRepository(PDOConnection::get()),
-            JwtService::class     => fn () => new FirebaseJwtService(Env::get('SECRET'), 1800),
+        $default = [
+            TestUseCase::class => fn () => new TestUseCase(),
         ];
+        self::$bindings = array_merge($default, $bindings);
     }
 
     public static function bind(string $abstract, callable $factory): void
@@ -36,7 +31,7 @@ final class Container
             return self::$instances[$class];
         }
 
-        $factory = InvalidInputException::notNullOrThrow(self::$bindings[$class], "Factory for $class");
+        $factory = Assert::notNull(self::$bindings[$class], "[$class] factory");
 
         return self::$instances[$class] = $factory();
     }
