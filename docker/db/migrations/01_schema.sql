@@ -5,7 +5,7 @@ CREATE TABLE users (
     name varchar(100) NOT NULL,
     password VARCHAR(255) NOT NULL,
     image_hash varchar(64),
-    bio varchar(500),
+    bio varchar(500) DEFAULT '',
     updated_at timestamptz DEFAULT CURRENT_TIMESTAMP,
     created_at timestamptz DEFAULT CURRENT_TIMESTAMP,
     deleted_at timestamptz DEFAULT NULL,
@@ -13,14 +13,14 @@ CREATE TABLE users (
 );
 
 CREATE TABLE users_tokens (
-    hash VARCHAR(80) PRIMARY KEY,
+    hash CHAR(64) PRIMARY KEY,
     user_id integer NOT NULL,
-    created_at timestamptz DEFAULT CURRENT_TIMESTAMP,
     expires_at timestamptz NOT NULL,
+    created_at timestamptz DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_tokens_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_tokens_user_expires ON users_tokens (user_id, expires_at);
+CREATE INDEX idx_tokens_user ON users_tokens (user_id, expires_at);
 
 CREATE TABLE categories (
     id smallserial PRIMARY KEY,

@@ -37,6 +37,7 @@ services:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       APP_ENV: ${APP_ENV}
+      SECRET: ${APP_SECRET}
     depends_on:
       - db
 
