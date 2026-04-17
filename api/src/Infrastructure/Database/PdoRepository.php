@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Hatepopcorn\Infrastructure\Database\Pdo;
+namespace Hatepopcorn\Infrastructure\Database;
 
 use Hatepopcorn\Infrastructure\Exceptions\DatabaseException;
 
@@ -12,7 +12,7 @@ abstract class PdoRepository
     {
     }
 
-    public function query(string $query, array $params = [], array $passthroughErrors = []): \PDOStatement
+    public function query(string $query, array $params = []): \PDOStatement
     {
         try {
             $stmt = $this->conn->prepare($query);
@@ -20,22 +20,19 @@ abstract class PdoRepository
 
             return $stmt;
         } catch (\PDOException $e) {
-            if (isset($passthroughErrors[$e->getCode()])) {
-                throw $e;
-            }
-            throw new DatabaseException($e);
+            throw new DatabaseException($e, 'Database error');
         }
     }
 
-    public function fetch(string $sql, array $data = [], array $passthroughErrors = []): ?array
+    public function fetch(string $sql, array $data = []): ?array
     {
-        $r = $this->query($sql, $data, $passthroughErrors)->fetch();
+        $r = $this->query($sql, $data)->fetch();
 
         return false === $r ? null : $r;
     }
 
-    public function fetchAll(string $sql, array $data = [], array $passthroughErrors = []): array
+    public function fetchAll(string $sql, array $data = []): array
     {
-        return $this->query($sql, $data, $passthroughErrors)->fetchAll();
+        return $this->query($sql, $data)->fetchAll();
     }
 }

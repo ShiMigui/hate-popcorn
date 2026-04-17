@@ -35,7 +35,7 @@ class PdoFactory
         try {
             return new \PDO("pgsql:host=$host;port=$port;dbname=$name;", $user, $pass, static::OPTS);
         } catch (\Throwable $th) {
-            throw new DatabaseException($th);
+            throw new DatabaseException($th, 'Database connection failed');
         }
     }
 }
