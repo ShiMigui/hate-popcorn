@@ -24,7 +24,7 @@ class Varchar extends ValueObject
         return preg_replace('/\s+/', ' ', trim($value));
     }
 
-    final public static function normalized(string $value, ?int $max, int $min = 0, string $label): self
+    final public static function normalized(string $value, string $label, ?int $max, int $min = 0): self
     {
         return new self(self::normalizeSpaces($value), $max, $min, $label);
     }
