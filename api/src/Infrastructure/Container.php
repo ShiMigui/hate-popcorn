@@ -29,11 +29,6 @@ final class Container
         self::$bindings = array_merge($default, $bindings);
     }
 
-    public static function bind(string $abstract, callable $factory): void
-    {
-        self::$bindings[$abstract] = $factory;
-    }
-
     public static function get(string $class): object
     {
         if (isset(self::$instances[$class])) {
