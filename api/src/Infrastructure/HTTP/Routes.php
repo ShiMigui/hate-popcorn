@@ -21,7 +21,7 @@ final class Routes
         'POST' => ['/user/register' => \Hatepopcorn\Application\User\UserRegister::class],
     ];
 
-    public static function dispatch(): Response
+    public static function dispatch(): void
     {
         try {
             $info = self::makeDispatcher(self::routes)->dispatch(
@@ -29,14 +29,14 @@ final class Routes
                 rawurldecode(strtok($_SERVER['REQUEST_URI'] ?? '/', '?'))
             );
 
-            return match ($info[0]) {
+            match ($info[0]) {
                 Dispatcher::METHOD_NOT_ALLOWED => Response::error('Method Not Allowed', 405),
                 Dispatcher::NOT_FOUND          => Response::notFound(),
                 Dispatcher::FOUND              => self::resolve($info[1], $info[2]),
                 default                        => Response::error('Internal Error'),
             };
         } catch (DomainException $e) {
-            return Response::error($e->getMessage(), $e::HTTP_CODE);
+            Response::error($e->getMessage(), $e::HTTP_CODE);
         } catch (InfrastructureException $e) {
             $message = $e->getMessage();
 
@@ -48,9 +48,9 @@ final class Routes
                 $message .= ": {$e->getPrevious()->getMessage()}";
             }
 
-            return Response::error($message);
+            Response::error($message);
         } catch (\Throwable $e) {
-            return Response::error(Environment::isDevMode() ? $e->getMessage() : 'Internal Error');
+            Response::error(Environment::isDevMode() ? $e->getMessage() : 'Internal Error');
         }
     }
 
@@ -65,12 +65,11 @@ final class Routes
         );
     }
 
-    private static function resolve(string $handler, array $vars): Response
+    private static function resolve(string $handler, array $vars): void
     {
-        $useCase = Container::get($handler);
-
-        return $useCase instanceof UseCase
-          ? $useCase->execute(new Request($vars))
-          : Response::error("[$handler] must implement [UseCase]");
+        if (!($useCase = Container::get($handler)) instanceof UseCase) {
+            throw new InfrastructureException("[$handler] must implement [UseCase]");
+        }
+        $useCase->execute(new Request($vars));
     }
 }
