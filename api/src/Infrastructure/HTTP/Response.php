@@ -20,25 +20,26 @@ final class Response
             header('Content-Type: application/json');
             echo json_encode($this->body, JSON_THROW_ON_ERROR);
         }
+        exit;
     }
 
-    public static function json(mixed $body, int $status = 200): self
+    public static function json(mixed $body, int $status = 200): void
     {
-        return new self($status, $body);
+        new self($status, $body)->send();
     }
 
-    public static function noContent(): self
+    public static function noContent(): void
     {
-        return new self(204);
+        new self(204)->send();
     }
 
-    public static function error(string $message, int $status = 500): self
+    public static function error(string $message, int $status = 500): void
     {
-        return new self($status, ['error' => $message]);
+        new self($status, ['error' => $message])->send();
     }
 
-    public static function notFound(): self
+    public static function notFound(): void
     {
-        return self::error('Not Found', 404);
+        self::error('Not Found', 404);
     }
 }

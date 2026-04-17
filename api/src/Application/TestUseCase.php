@@ -9,8 +9,8 @@ use Hatepopcorn\Infrastructure\HTTP\Response;
 
 class TestUseCase implements UseCase
 {
-    public function execute(Request $req): Response
+    public function execute(Request $req): void
     {
-        return Response::json(['message' => 'Hello World']);
+        Response::json(['message' => 'Hello World']);
     }
 }
