@@ -17,7 +17,8 @@ use Hatepopcorn\Infrastructure\Utils\Environment;
 final class Routes
 {
     public const routes = [
-        'GET' => ['/' => \Hatepopcorn\Application\TestUseCase::class],
+        'GET'  => ['/' => \Hatepopcorn\Application\TestUseCase::class],
+        'POST' => ['/user/register' => \Hatepopcorn\Application\User\UserRegister::class],
     ];
 
     public static function dispatch(): Response
@@ -35,7 +36,7 @@ final class Routes
                 default                        => Response::error('Internal Error'),
             };
         } catch (DomainException $e) {
-            return Response::error($e->getMessage(), $e->getHttpCode());
+            return Response::error($e->getMessage(), $e::HTTP_CODE);
         } catch (InfrastructureException $e) {
             $message = $e->getMessage();
 

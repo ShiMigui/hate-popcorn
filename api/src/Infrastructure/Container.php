@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Hatepopcorn\Infrastructure;
 
 use Hatepopcorn\Application\TestUseCase;
+use Hatepopcorn\Application\User\UserRegister;
+use Hatepopcorn\Domain\User\UserRepository;
+use Hatepopcorn\Infrastructure\Database\PdoFactory;
+use Hatepopcorn\Infrastructure\Database\UserPdoRepository;
 use Hatepopcorn\Infrastructure\Utils\Assert;
 
 final class Container
@@ -15,7 +19,12 @@ final class Container
     public static function bootstrap(array $bindings = []): void
     {
         $default = [
-            TestUseCase::class => fn () => new TestUseCase(),
+            \PDO::class => fn () => PdoFactory::create(),
+
+            UserRepository::class => fn () => new UserPdoRepository(self::get(\PDO::class)),
+
+            TestUseCase::class  => fn () => new TestUseCase(),
+            UserRegister::class => fn () => new UserRegister(self::get(UserRepository::class)),
         ];
         self::$bindings = array_merge($default, $bindings);
     }

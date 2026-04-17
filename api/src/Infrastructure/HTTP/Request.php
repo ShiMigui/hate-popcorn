@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Hatepopcorn\Infrastructure\HTTP;
 
 use Hatepopcorn\Domain\Exceptions\InvalidTypeException;
+use Hatepopcorn\Domain\Exceptions\InvalidValueException;
 use Hatepopcorn\Infrastructure\Utils\Assert;
 use Hatepopcorn\Infrastructure\Utils\Caster;
 
@@ -67,39 +68,27 @@ final class Request
     }
 
     /**
-     * Get a nested value from JSON body using dot notation.
-     *
-     * @param string $path    Dot-separated path (e.g., "user.profile.name")
-     * @param mixed  $default Default value if path not found
-     *
-     * @return mixed Value at path or default
-     */
-    public function bodyPath(string $path, mixed $default = null): mixed
-    {
-        $segments = explode('.', $path);
-        $value    = $this->body();
-
-        foreach ($segments as $segment) {
-            if (!is_array($value) || !array_key_exists($segment, $value)) {
-                return $default;
-            }
-            $value = $value[$segment];
-        }
-
-        return $value;
-    }
-
-    /**
      * Get a typed nested value from JSON body.
      *
-     * @param string $path    Dot-separated path
-     * @param Caster $type    Expected type
-     * @param mixed  $default Default value (must match the expected type)
+     * @param string $path Dot-separated path
+     * @param Caster $type Expected type
      *
      * @return mixed Casted value
      */
-    public function bodyParam(string $path, Caster $type, mixed $default = null): mixed
+    public function param(string $path, Caster $type): mixed
     {
-        return $type->cast($path, $this->bodyPath($path, $default));
+        $parts       = explode('.', $path);
+        $value       = $this->body();
+        $currentPath = '';
+
+        foreach ($parts as $part) {
+            if (!is_array($value) || !array_key_exists($part, $value)) {
+                throw new InvalidValueException("$currentPath$part not provided");
+            }
+            $value = $value[$part];
+            $currentPath .= "$part.";
+        }
+
+        return $type->cast($path, $value);
     }
 }

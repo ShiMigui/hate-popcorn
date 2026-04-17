@@ -8,7 +8,7 @@ final class Response
 {
     private function __construct(
         private int $status,
-        private ?array $body = null,
+        private mixed $body = null,
     ) {
     }
 
@@ -22,7 +22,7 @@ final class Response
         }
     }
 
-    public static function json(array $body, int $status = 200): self
+    public static function json(mixed $body, int $status = 200): self
     {
         return new self($status, $body);
     }
