@@ -24,12 +24,12 @@ trait UserAttributes
 
     public function changeName(string $name): void
     {
-        $this->name = Varchar::normalized($name, 100, 5, 'User name');
+        $this->name = Varchar::normalized($name, 'User name', 100, 5);
     }
 
     public function changeBio(string $bio): void
     {
-        $this->bio = Varchar::normalized($bio, 500, 0, 'User bio');
+        $this->bio = Varchar::normalized($bio, 'User bio', 500, 0);
     }
 
     public function changeEmail(string $email): void
