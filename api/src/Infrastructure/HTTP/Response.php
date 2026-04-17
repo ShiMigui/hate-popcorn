@@ -7,8 +7,8 @@ namespace Hatepopcorn\Infrastructure\HTTP;
 final class Response
 {
     private function __construct(
-        private ?array $body,
         private int $status,
+        private mixed $body = null,
     ) {
     }
 
@@ -22,23 +22,23 @@ final class Response
         }
     }
 
-    public static function json(array $body, int $status = 200): self
+    public static function json(mixed $body, int $status = 200): self
     {
-        return new self($body, $status);
+        return new self($status, $body);
     }
 
     public static function noContent(): self
     {
-        return new self(null, 204);
+        return new self(204);
+    }
+
+    public static function error(string $message, int $status = 500): self
+    {
+        return new self($status, ['error' => $message]);
     }
 
     public static function notFound(): self
     {
         return self::error('Not Found', 404);
-    }
-
-    public static function error(string $message, int $status = 500): self
-    {
-        return new self(['error' => $message], $status);
     }
 }

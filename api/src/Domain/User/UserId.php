@@ -6,6 +6,6 @@ namespace Hatepopcorn\Domain\User;
 
 use Hatepopcorn\Domain\ValueObjects\Id;
 
-final class UserId extends Id
+class UserId extends Id
 {
 }

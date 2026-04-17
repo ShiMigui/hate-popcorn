@@ -4,134 +4,71 @@ declare(strict_types=1);
 
 namespace Hatepopcorn\Domain\User;
 
-use Hatepopcorn\Domain\Exceptions\InvalidInputException;
-use Hatepopcorn\Domain\ValueObjects\Email;
+use Hatepopcorn\Domain\ValueObjects\Datetime;
+use Hatepopcorn\Domain\ValueObjects\Password;
+use Hatepopcorn\Infrastructure\Utils\Assert;
 
-class User
+class User implements \JsonSerializable
 {
-    private UserName $name;
-    private Email $email;
-    private UserPassword $password;
-    private ?UserId $id                    = null;
-    private ?UserBio $bio                  = null;
-    private UserRole $role                 = UserRole::USER;
-    private ?\DateTimeImmutable $createdAt = null;
-    private ?\DateTimeImmutable $updatedAt = null;
-    // private string $imageHash; // For now, I won't implement this
+    use UserAttributes;
 
-    public function __construct(
+    private function __construct(
         string $name,
-        string $password,
         string $email,
-        ?int $id = null,
-        ?int $roleId = null,
-        ?string $bio = null,
-        ?string $createdAt = null,
-        ?string $updatedAt = null,
+        Password $password,
+        string $bio = '',
+        ?UserId $id = null,
+        ?Datetime $createdAt = null,
+        ?Datetime $updatedAt = null,
+        UserRole $role = UserRole::USER,
     ) {
-        $this->name     = UserName::from($name);
-        $this->email    = Email::from($email);
-        $this->password = UserPassword::from($password);
-
-        if (null !== $roleId) {
-            $this->role = UserRole::from($roleId);
-        }
-        if (null !== $id) {
-            $this->id = UserId::from($id);
-        }
-        if (null !== $bio) {
-            $this->bio = UserBio::from($bio);
-        }
-        if (null !== $createdAt) {
-            $this->createdAt = new \DateTimeImmutable($createdAt);
-        }
-        if (null !== $updatedAt) {
-            $this->updatedAt = new \DateTimeImmutable($updatedAt);
-        }
+        $this->changeBio($bio);
+        $this->changeName($name);
+        $this->changeEmail($email);
+        $this->id        = $id;
+        $this->role      = $role;
+        $this->password  = $password;
+        $this->createdAt = $createdAt;
+        $this->updatedAt = $updatedAt;
     }
 
-    public function toResponse(): array
+    public static function database(int $id, int $role, string $name, string $bio, string $email, string $password, string $createdAt, string $updatedAt): static
     {
+        return new static($name, $email, Password::from($password), $bio,
+            UserId::from($id),
+            Datetime::from($createdAt),
+            Datetime::from($updatedAt),
+            UserRole->from($role),
+        );
+    }
+
+    public static function aNew(string $name, string $email, string $password): static
+    {
+        return new static($name, $email, Password::encrypt($password));
+    }
+
+    public function markAsPersisted(int $id, string $createdAt, string $updatedAt): static
+    {
+        Assert::null($this->id, 'User id');
+
+        $this->id        = UserId::from($id);
+        $this->createdAt = Datetime::from($createdAt);
+        $this->updatedAt = Datetime::from($updatedAt);
+
+        return $this;
+    }
+
+    public function jsonSerialize(): array
+    {
+        $role = $this->role();
+
         return [
-            'id'         => $this->getId(),
-            'bio'        => $this->getBio(),
-            'name'       => $this->getName(),
-            'role'       => $this->role->toResponse(),
-            'updated_at' => $this->getUpdatedAt(),
-            'created_at' => $this->getCreatedAt(),
+            'id'         => $this->id()->value,
+            'name'       => $this->name()->value,
+            'bio'        => $this->bio()->value,
+            'role'       => ['id' => $role->value, 'name' => $role->label()],
+            'created_at' => $this->createdAt()->format(),
+            'updated_at' => $this->updatedAt()->format(),
         ];
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id?->get();
-    }
-
-    public function getRole(): int
-    {
-        return $this->role->value;
-    }
-
-    public function getName(): string
-    {
-        return $this->name->get();
-    }
-
-    public function getEmail(): string
-    {
-        return $this->email->get();
-    }
-
-    public function getBio(): ?string
-    {
-        return $this->bio?->get();
-    }
-
-    public function getPassword(): ?string
-    {
-        return $this->password?->get();
-    }
-
-    public function getCreatedAt(): ?string
-    {
-        return $this->createdAt?->format(DATE_ATOM);
-    }
-
-    public function getUpdatedAt(): ?string
-    {
-        return $this->updatedAt?->format(DATE_ATOM);
-    }
-
-    public function changeName(string $name): void
-    {
-        $this->name = UserName::from($name);
-    }
-
-    public function changeEmail(string $email): void
-    {
-        $this->email = Email::from($email);
-    }
-
-    public function changeBio(string $bio): void
-    {
-        $this->bio = UserBio::from($bio);
-    }
-
-    public function setId(int $id): void
-    {
-        if (null !== $this->id) {
-            throw new InvalidInputException('Id cannot be changed');
-        }
-        $this->id = UserId::from($id);
-    }
-
-    public function syncUpdatedAt(string $updatedAt): void
-    {
-        $this->updatedAt = new \DateTimeImmutable($updatedAt);
-    }
-
-    public function syncCreatedAt(string $createdAt): void
-    {
-        $this->createdAt = new \DateTimeImmutable($createdAt);
     }
 }

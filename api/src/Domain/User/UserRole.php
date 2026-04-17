@@ -11,14 +11,6 @@ enum UserRole: int
 
     public function label(): string
     {
-        return match ($this) {
-            self::USER  => 'user',
-            self::ADMIN => 'admin',
-        };
-    }
-
-    public function toResponse(): array
-    {
-        return ['id' => $this->value, 'name' => $this->label()];
+        return $this->name;
     }
 }

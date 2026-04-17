@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace Hatepopcorn\Domain\ValueObjects;
 
-use Hatepopcorn\Domain\Exceptions\InvalidInputException;
+use Hatepopcorn\Domain\Exceptions\InvalidValueException;
 
-final class Email extends LimitedString
+final class Email extends Varchar
 {
-    protected static ?int $max = 320;
-    protected static ?int $min = 7;
-
     public function __construct(string $value)
     {
-        if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-            throw new InvalidInputException('Invalid email format');
+        $value = trim($value);
+        parent::__construct($value, 320, 7, 'Email');
+
+        if (false === filter_var($value, FILTER_VALIDATE_EMAIL)) {
+            throw new InvalidValueException("Invalid email format: '$value'");
         }
-        parent::__construct(mb_strtolower($value));
     }
 }

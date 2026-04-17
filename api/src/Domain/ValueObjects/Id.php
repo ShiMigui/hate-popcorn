@@ -4,18 +4,15 @@ declare(strict_types=1);
 
 namespace Hatepopcorn\Domain\ValueObjects;
 
-use Hatepopcorn\Domain\Exceptions\InvalidInputException;
+use Hatepopcorn\Domain\Exceptions\InvalidValueException;
 
-abstract class Id extends ValueObject
+class Id extends ValueObject
 {
-    protected function __construct(int $value)
+    public function __construct(int $id)
     {
-        $class = static::className();
-
-        if ($value <= 0) {
-            throw new InvalidInputException("$class must be a positive integer, given $value");
+        if ($id < 1) {
+            throw new InvalidValueException("{$this->name()} must be positive, got {$id}");
         }
-
-        parent::__construct($value);
+        parent::__construct($id);
     }
 }
