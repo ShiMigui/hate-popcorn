@@ -9,7 +9,6 @@ use Hatepopcorn\Domain\User\User;
 use Hatepopcorn\Domain\User\UserRepository;
 use Hatepopcorn\Infrastructure\HTTP\Request;
 use Hatepopcorn\Infrastructure\HTTP\Response;
-use Hatepopcorn\Infrastructure\Utils\Caster;
 
 class UserRegister implements UseCase
 {
@@ -17,15 +16,13 @@ class UserRegister implements UseCase
     {
     }
 
-    public function execute(Request $req): Response
+    public function execute(Request $req): void
     {
-        $o = User::aNew(
-            $req->param('name', Caster::STRING),
-            $req->param('email', Caster::STRING),
-            $req->param('password', Caster::STRING)
-        );
+        [$name, $email, $password] = $req->body()->listOf(['name', 'email', 'password']);
+
+        $o = User::aNew($name, $email, $password);
         $this->repo->create($o);
 
-        return Response::json($o, 201);
+        Response::json($o, 201);
     }
 }
